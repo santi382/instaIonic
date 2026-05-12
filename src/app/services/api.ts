@@ -8,7 +8,7 @@ import { Auth } from './auth';
 })
 export class Api {
 
-  private apiUrl = 'http://127.0.0.1:8001/api/';
+  private apiUrl = 'http://20.80.73.232/api/';
 
   constructor(private http: HttpClient, private auth: Auth) {}
 
