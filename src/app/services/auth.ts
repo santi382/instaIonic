@@ -7,13 +7,13 @@ import { HttpClient } from '@angular/common/http';
 export class Auth {
 
   private tokenKey = 'token';
-  private apiUrl = 'http://20.20.1.145/api/';
+  private apiUrl = 'http://127.0.0.1:8001/api/';
 
   constructor(private http: HttpClient) {}
 
   login(email: string, password: string) {
     return this.http.post<{user:any, token:string}>(this.apiUrl + 'login', { email, password });
-  }
+}
 
   register(data: {name:string; email:string; password:string; username:string}) {
     return this.http.post<{user:any, token:string}>(this.apiUrl +  'register', data);

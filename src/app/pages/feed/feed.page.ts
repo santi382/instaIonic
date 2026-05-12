@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { IonHeader, IonToolbar, IonTitle, IonContent,
   IonList, IonItem, IonAvatar, IonLabel, IonButton, IonButtons, IonInput, IonIcon } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
-import { cameraOutline, exitOutline, personAdd } from 'ionicons/icons';
+import { cameraOutline, exitOutline, personAdd, chatbubbleOutline, searchOutline, checkmarkOutline } from 'ionicons/icons';
 import { Router } from '@angular/router';
 import { Api } from '../../services/api';
 import { Auth } from '../../services/auth';
@@ -21,28 +21,41 @@ import { Auth } from '../../services/auth';
 export class FeedPage implements OnInit {
 
   posts: any[] = [];
-  base = 'http://20.20.3.187/storage/';
+  friends: any[] = [];
+  base = 'http://127.0.0.1:8001/storage/';
 
   selectedPost: any = null;
   newComment = '';
   comments: any[] = [];
   showComments = false;
-  friendId: number | null = null;
+
+  searchQuery = '';
+  searchResults: any[] = [];
+  showSearch = false;
+
+  pendingRequests: any[] = [];
+  showPending = false;
+
+  showUserPosts = false;
+  userPosts: any[] = [];
+  selectedUser: any = null;
+  storyIndex = 0;
+  hideHeader = false;
 
   constructor(
-    private api: Api, 
-    private router: Router, 
+    private api: Api,
+    private router: Router,
     private auth: Auth,
-  ) 
-  {
-      addIcons({cameraOutline,personAdd,exitOutline});
+  ) {
+    addIcons({ cameraOutline, personAdd, exitOutline, chatbubbleOutline, searchOutline, checkmarkOutline });
   }
 
   ngOnInit() { this.load(); }
 
-
   load() {
     this.api.getFeed().subscribe(res => this.posts = res.data ?? res);
+    this.api.getFriends().subscribe(res => this.friends = res.data ?? res);
+    this.api.getPendingFriendRequests().subscribe(res => this.pendingRequests = res.data ?? res);
   }
 
   like(p: any) {
@@ -50,9 +63,13 @@ export class FeedPage implements OnInit {
   }
 
   goNewPost() { this.router.navigateByUrl('/new-post'); }
-  goFriends() { this.router.navigateByUrl('/friends'); }
 
   imgUrl(path: string) { return this.base + path; }
+
+  avatarLetter(u: any): string {
+    const name = u?.profile?.username || u?.name || '?';
+    return name.charAt(0).toUpperCase();
+  }
 
   openComments(p: any) {
     this.selectedPost = p;
@@ -68,30 +85,56 @@ export class FeedPage implements OnInit {
     });
   }
 
-  addFriend() {
-    if (!this.friendId) return;
-    this.api.sendFriendRequest(this.friendId).subscribe(_ => {
-      this.friendId = null;
+  closeComments() {
+    this.showComments = false;
+    this.selectedPost = null;
+    this.comments = [];
+    this.newComment = '';
+  }
+
+  onSearch() {
+    if (!this.searchQuery.trim()) { this.searchResults = []; return; }
+    this.api.searchUsers(this.searchQuery).subscribe(res => this.searchResults = res);
+  }
+
+  sendRequest(user: any) {
+    this.api.sendFriendRequest(user.id).subscribe(() => {
+      user.requested = true;
     });
   }
 
-   closeComments() {
-      this.showComments = false;
-      this.selectedPost = null;
-      this.comments = [];
-      this.newComment = '';
-    }
+  acceptRequest(req: any) {
+    this.api.acceptFriendship(req.id).subscribe(() => this.load());
+  }
 
-    logout() {
-      this.auth.logoutRemote()?.subscribe({
-        next: () => {
-          this.auth.logout();
-          this.router.navigateByUrl('/login', { replaceUrl: true });
-        },
-        error: () => {
-          this.auth.logout();
-          this.router.navigateByUrl('/login', { replaceUrl: true });
-        }
-      });
-    }
+  openUserPosts(friend: any) {
+    this.selectedUser = friend;
+    this.showUserPosts = true;
+    this.storyIndex = 0;
+    this.hideHeader = true;
+    this.api.getFeed().subscribe(res => {
+      const all = res.data ?? res;
+      this.userPosts = all.filter((p: any) => p.user_id === friend.id);
+    });
+  }
+
+  closeStory() {
+    this.showUserPosts = false;
+    this.hideHeader = false;
+  }
+
+  nextStory() {
+    if (this.storyIndex < this.userPosts.length - 1) this.storyIndex++;
+  }
+
+  prevStory() {
+    if (this.storyIndex > 0) this.storyIndex--;
+  }
+
+  logout() {
+    this.auth.logoutRemote()?.subscribe({
+      next: () => { this.auth.logout(); this.router.navigateByUrl('/login', { replaceUrl: true }); },
+      error: () => { this.auth.logout(); this.router.navigateByUrl('/login', { replaceUrl: true }); }
+    });
+  }
 }

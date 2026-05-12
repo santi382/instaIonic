@@ -8,7 +8,7 @@ import { Auth } from './auth';
 })
 export class Api {
 
-  private apiUrl = 'http://20.20.1.145/api/';
+  private apiUrl = 'http://127.0.0.1:8001/api/';
 
   constructor(private http: HttpClient, private auth: Auth) {}
 
@@ -64,5 +64,9 @@ export class Api {
   acceptFriendship(friendshipId: number) {
     return this.http.post(this.apiUrl + `friendships/${friendshipId}/accept`, {}, this.authHeaders());
   }
+
+  searchUsers(q: string) {
+    return this.http.get<any[]>(this.apiUrl + `users/search?q=${q}`, this.authHeaders());
+}
 
 }

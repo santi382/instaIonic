@@ -1,14 +1,24 @@
-<ion-header>
+<ion-header [hidden]="hideHeader">
   <ion-toolbar>
-    <ion-title>Feed</ion-title>
+    <ion-title>Intercabran</ion-title>
     <ion-buttons slot="start">
       <ion-button (click)="goNewPost()">
         <ion-icon name="camera-outline"></ion-icon>
       </ion-button>
     </ion-buttons>
     <ion-buttons slot="end">
-      <ion-button (click)="goFriends()">
+      <ion-button (click)="showSearch = !showSearch">
+        <ion-icon name="search-outline"></ion-icon>
+      </ion-button>
+      <ion-button (click)="showPending = !showPending">
         <ion-icon name="person-add"></ion-icon>
+        <span *ngIf="pendingRequests.length > 0"
+              style="position:absolute;top:4px;right:4px;background:red;color:white;border-radius:50%;width:16px;height:16px;font-size:10px;display:flex;align-items:center;justify-content:center;">
+          {{ pendingRequests.length }}
+        </span>
+      </ion-button>
+      <ion-button>
+        <ion-icon name="chatbubble-outline"></ion-icon>
       </ion-button>
       <ion-button (click)="logout()">
         <ion-icon name="exit-outline"></ion-icon>
@@ -19,61 +29,182 @@
 
 <ion-content>
 
-  <!-- enviar solicitud de amistad rápida -->
-  <ion-item>
-    <ion-input placeholder="ID usuario" type="number" [(ngModel)]="friendId"></ion-input>
-    <ion-button (click)="addFriend()">Agregar</ion-button>
-  </ion-item>
-
-  <!-- posts -->
-  <ion-list *ngFor="let p of posts">
-    <ion-item lines="none">
-      <ion-avatar slot="start">
-        <img src="https://placehold.co/64x64" />
-      </ion-avatar>
-      <ion-label>
-        <h2>{{ p.user?.profile?.username || p.user?.name }}</h2>
-        <p>{{ p.caption }}</p>
-      </ion-label>
+  <!-- Buscar usuario -->
+  <div *ngIf="showSearch" style="padding:8px;background:black;border-bottom:1px solid black;">
+    <ion-item lines="none" style="--background:black;">
+      <ion-input placeholder="Buscar por nombre o usuario..."
+                 [(ngModel)]="searchQuery"
+                 (ionInput)="onSearch()">
+      </ion-input>
     </ion-item>
+    <div *ngIf="searchResults.length > 0">
+      <div *ngFor="let u of searchResults"
+           style="display:flex;align-items:center;padding:10px 12px;gap:10px;border-top:1px solid #f0f0f0;">
+        <div style="width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,#0d2d5e,#1a4a8a);color:white;display:flex;align-items:center;justify-content:center;font-weight:600;flex-shrink:0;">
+          {{ avatarLetter(u) }}
+        </div>
+        <div style="flex:1;">
+          <p style="margin:0;font-weight:600;font-size:14px;color:#111;">{{ u.profile?.username || u.name }}</p>
+          <p style="margin:0;font-size:12px;color:#888;">{{ u.name }}</p>
+        </div>
+        <button (click)="sendRequest(u)" [disabled]="u.requested"
+                style="background:linear-gradient(135deg,#0d2d5e,#1a4a8a);color:white;border:none;padding:6px 14px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;">
+          {{ u.requested ? 'Enviado' : 'Seguir' }}
+        </button>
+      </div>
+    </div>
+  </div>
 
-    <img [src]="imgUrl(p.image)" style="width:100%;max-height:280px;object-fit:cover;" />
+  <!-- Solicitudes pendientes -->
+  <div *ngIf="showPending && pendingRequests.length > 0"
+       style="padding:8px;background:#fff8e1;border-bottom:1px solid #ffe082;">
+    <p style="margin:0 0 6px 8px;font-weight:600;font-size:13px;color:#333;">Solicitudes pendientes</p>
+    <div *ngFor="let r of pendingRequests"
+         style="display:flex;align-items:center;padding:8px 12px;gap:10px;">
+      <div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#0d2d5e,#1a4a8a);color:white;display:flex;align-items:center;justify-content:center;font-weight:600;flex-shrink:0;">
+        {{ avatarLetter(r.user) }}
+      </div>
+      <p style="margin:0;flex:1;font-size:14px;color:#111;">{{ r.user?.profile?.username || r.user?.name }}</p>
+      <button (click)="acceptRequest(r)"
+              style="background:#22c55e;color:white;border:none;padding:6px 14px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;">
+        Aceptar
+      </button>
+    </div>
+  </div>
 
-    <ion-item>
-      <ion-button fill="clear" (click)="like(p)">
-        ❤️ Like ({{ p.likes?.length || 0 }})
-      </ion-button>
-      <ion-button fill="clear" (click)="openComments(p)">
+  <!-- Mis Seguidos (historias) -->
+  <div style="background:white;padding:10px 8px 8px;border-bottom:1px solid #efefef;margin-bottom:4px;">
+    <div style="display:flex;gap:14px;overflow-x:auto;padding-bottom:4px;">
+      <div *ngFor="let f of friends"
+           (click)="openUserPosts(f)"
+           style="display:flex;flex-direction:column;align-items:center;min-width:64px;cursor:pointer;">
+        <div style="padding:2px;background:linear-gradient(135deg,#0d2d5e,#1a4a8a,#00b4d8);border-radius:50%;">
+          <div style="width:52px;height:52px;border-radius:50%;background:#a855f7;color:white;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:600;border:2px solid white;">
+            {{ avatarLetter(f) }}
+          </div>
+        </div>
+        <span style="font-size:11px;margin-top:4px;text-align:center;max-width:64px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#111;">
+          {{ f?.profile?.username || f?.name }}
+        </span>
+      </div>
+      <div *ngIf="friends.length === 0"
+           style="font-size:13px;color:#999;padding:8px;">
+        Aún no sigues a nadie
+      </div>
+    </div>
+  </div>
+
+  <!-- Posts -->
+  <div *ngFor="let p of posts" style="background:white;margin-bottom:8px;border-bottom:1px solid #efefef;">
+    <div style="display:flex;align-items:center;padding:10px 12px;gap:10px;">
+      <div style="width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,#0d2d5e,#1a4a8a);color:white;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:600;flex-shrink:0;">
+        {{ avatarLetter(p.user) }}
+      </div>
+      <div>
+        <p style="margin:0;font-weight:600;font-size:14px;color:#111;">{{ p.user?.profile?.username || p.user?.name }}</p>
+        <p style="margin:0;font-size:12px;color:#888;">{{ p.caption }}</p>
+      </div>
+    </div>
+
+    <img [src]="imgUrl(p.image)" style="width:100%;max-height:300px;object-fit:cover;display:block;" />
+
+    <div style="padding:8px 12px;display:flex;align-items:center;gap:16px;">
+      <button (click)="like(p)"
+              style="background:none;border:none;font-size:22px;cursor:pointer;padding:0;">
+        ❤️
+      </button>
+      <span style="font-size:13px;font-weight:600;color:#111;">{{ p.likes?.length || 0 }} me gusta</span>
+      <button (click)="openComments(p)"
+              style="background:none;border:none;font-size:22px;cursor:pointer;padding:0;margin-left:4px;">
         💬
-      </ion-button>
-    </ion-item>
-  </ion-list>
+      </button>
+    </div>
+  </div>
 
-  <!-- panel de comentarios -->
+  <!-- Panel comentarios -->
   <div *ngIf="showComments"
-       style="position:fixed;bottom:0;left:0;right:0;top:25%;background:white;z-index:1000;box-shadow:0 -4px 12px rgba(0,0,0,.15);">
-    <ion-header>
-      <ion-toolbar>
-        <ion-title>Comentarios</ion-title>
-        <ion-buttons slot="end">
-          <ion-button (click)="closeComments()">Cerrar</ion-button>
-        </ion-buttons>
-      </ion-toolbar>
-    </ion-header>
+       style="position:fixed;bottom:0;left:0;right:0;top:25%;background:white;z-index:1000;box-shadow:0 -4px 12px rgba(0,0,0,.15);border-radius:16px 16px 0 0;">
+    <div style="padding:12px 16px;border-bottom:1px solid #efefef;display:flex;align-items:center;justify-content:space-between;">
+      <p style="margin:0;font-weight:600;font-size:15px;color:#111;">Comentarios</p>
+      <button (click)="closeComments()"
+              style="background:none;border:none;font-size:20px;cursor:pointer;color:#888;">✕</button>
+    </div>
     <ion-content class="ion-padding">
-      <ion-list>
-        <ion-item *ngFor="let c of comments">
-          <ion-label>
-            <strong>{{ c.user?.profile?.username || c.user?.name }}</strong><br />
-            {{ c.content }}
-          </ion-label>
-        </ion-item>
-      </ion-list>
-      <ion-item>
+      <div *ngFor="let c of comments" style="padding:8px 0;border-bottom:1px solid #f5f5f5;">
+        <p style="margin:0;font-size:14px;color:#111;">
+          <strong>{{ c.user?.profile?.username || c.user?.name }}</strong>
+          {{ c.content }}
+        </p>
+      </div>
+      <ion-item lines="none" style="margin-top:8px;">
         <ion-input placeholder="Escribe un comentario..." [(ngModel)]="newComment"></ion-input>
-        <ion-button (click)="sendComment()">Enviar</ion-button>
+        <ion-button (click)="sendComment()" fill="clear">Enviar</ion-button>
       </ion-item>
     </ion-content>
+  </div>
+
+  <!-- Historia de usuario -->
+  <div *ngIf="showUserPosts"
+       style="position:fixed;top:0;left:0;right:0;bottom:0;background:black;z-index:99999;">
+
+    <!-- Botón cerrar -->
+    <button (click)="closeStory()"
+            style="position:absolute;top:50px;right:16px;background:rgba(255,255,255,0.3);border:2px solid white;color:white;font-size:20px;width:44px;height:44px;border-radius:50%;cursor:pointer;z-index:99999;display:flex;align-items:center;justify-content:center;font-weight:bold;">
+      ✕
+    </button>
+
+    <!-- Nombre usuario -->
+    <div style="position:absolute;top:50px;left:16px;display:flex;align-items:center;gap:10px;z-index:99999;">
+      <div style="width:36px;height:36px;border-radius:50%;background:#a855f7;color:white;display:flex;align-items:center;justify-content:center;font-weight:600;">
+        {{ avatarLetter(selectedUser) }}
+      </div>
+      <span style="color:white;font-weight:600;font-size:15px;text-shadow:0 1px 3px rgba(0,0,0,0.8);">
+        {{ selectedUser?.profile?.username || selectedUser?.name }}
+      </span>
+    </div>
+
+    <!-- Barras de progreso -->
+    <div style="position:absolute;top:104px;left:12px;right:12px;display:flex;gap:3px;z-index:99999;">
+      <div *ngFor="let p of userPosts; let i = index"
+           style="flex:1;height:3px;border-radius:2px;"
+           [style.background]="i <= storyIndex ? 'white' : 'rgba(255,255,255,0.4)'">
+      </div>
+    </div>
+
+    <!-- Imagen -->
+    <div style="position:absolute;top:120px;left:0;right:0;bottom:120px;display:flex;align-items:center;justify-content:center;">
+      <img *ngIf="userPosts.length > 0"
+           [src]="imgUrl(userPosts[storyIndex].image)"
+           style="max-width:100%;max-height:100%;object-fit:contain;" />
+      <div *ngIf="userPosts.length === 0"
+           style="color:white;text-align:center;">
+        Sin publicaciones aún
+      </div>
+    </div>
+
+    <!-- Caption -->
+    <div *ngIf="userPosts.length > 0"
+         style="position:absolute;bottom:70px;left:0;right:0;padding:10px 16px;background:rgba(0,0,0,0.5);">
+      <p style="color:white;margin:0;font-size:14px;">{{ userPosts[storyIndex]?.caption }}</p>
+    </div>
+
+    <!-- Navegación -->
+    <div *ngIf="userPosts.length > 0"
+         style="position:absolute;bottom:16px;left:0;right:0;display:flex;justify-content:center;gap:20px;">
+      <button (click)="prevStory()" [disabled]="storyIndex === 0"
+              style="background:rgba(255,255,255,0.2);border:none;color:white;padding:10px 24px;border-radius:20px;font-size:20px;cursor:pointer;">
+        ‹
+      </button>
+      <button (click)="like(userPosts[storyIndex])"
+              style="background:rgba(255,255,255,0.2);border:none;color:white;padding:10px 20px;border-radius:20px;font-size:16px;cursor:pointer;">
+        ❤️ {{ userPosts[storyIndex]?.likes?.length || 0 }}
+      </button>
+      <button (click)="nextStory()" [disabled]="storyIndex === userPosts.length - 1"
+              style="background:rgba(255,255,255,0.2);border:none;color:white;padding:10px 24px;border-radius:20px;font-size:20px;cursor:pointer;">
+        ›
+      </button>
+    </div>
+
   </div>
 
 </ion-content>

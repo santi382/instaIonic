@@ -1,21 +1,71 @@
-<ion-header><ion-toolbar><ion-title>Mini Instagram</ion-title></ion-toolbar></ion-header>
-<ion-content class="ion-padding">
-  <ion-segment [(ngModel)]="isRegister">
-    <ion-segment-button [value]="false"><ion-label>Ingresar</ion-label></ion-segment-button>
-    <ion-segment-button [value]="true"><ion-label>Registrar</ion-label></ion-segment-button>
-  </ion-segment>
+<ion-content>
+  <div style="min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;background:linear-gradient(135deg,#0a1628,#0d2d5e,#1a4a8a);">
 
-  <div *ngIf="isRegister">
-    <ion-item><ion-input label="Nombre" [(ngModel)]="name"></ion-input></ion-item>
-    <ion-item><ion-input label="Usuario" [(ngModel)]="username"></ion-input></ion-item>
+    <!-- Logo -->
+<div style="margin-bottom:32px;text-align:center;">
+  <img src="assets/logo.jpeg" style="width:200px;border-radius:16px;margin-bottom:8px;" />
+  <p style="color:rgba(255,255,255,0.8);margin:4px 0 0;font-size:14px;">BIENVENIDO A INTERCABRAN</p>
+</div>
+    <!-- Card -->
+    <div style="width:100%;max-width:400px;background:white;border-radius:24px;padding:28px 24px;box-shadow:0 20px 60px rgba(0,0,0,0.2);">
+
+      <!-- Tabs -->
+      <div style="display:flex;background:#f3f4f6;border-radius:12px;padding:4px;margin-bottom:24px;">
+        <button (click)="isRegister=false"
+                [style.background]="!isRegister ? 'white' : 'transparent'"
+                [style.color]="!isRegister ? '#a855f7' : '#6b7280'"
+                [style.font-weight]="!isRegister ? '600' : '400'"
+                style="flex:1;border:none;padding:10px;border-radius:10px;font-size:14px;cursor:pointer;transition:all 0.2s;">
+          Ingresar
+        </button>
+        <button (click)="isRegister=true"
+                [style.background]="isRegister ? 'white' : 'transparent'"
+                [style.color]="isRegister ? '#a855f7' : '#6b7280'"
+                [style.font-weight]="isRegister ? '600' : '400'"
+                style="flex:1;border:none;padding:10px;border-radius:10px;font-size:14px;cursor:pointer;transition:all 0.2s;">
+          Registrarse
+        </button>
+      </div>
+
+      <!-- Campos registro -->
+      <div *ngIf="isRegister" style="margin-bottom:12px;">
+        <div style="margin-bottom:12px;">
+          <label style="font-size:13px;font-weight:500;color:#374151;display:block;margin-bottom:6px;">Nombre completo</label>
+          <input [(ngModel)]="name" type="text" placeholder="Tu nombre"
+                 style="width:100%;padding:12px 14px;border:1.5px solid #e5e7eb;border-radius:12px;font-size:14px;outline:none;box-sizing:border-box;"/>
+        </div>
+        <div style="margin-bottom:12px;">
+          <label style="font-size:13px;font-weight:500;color:#374151;display:block;margin-bottom:6px;">Usuario</label>
+          <input [(ngModel)]="username" type="text" placeholder="@usuario"
+                 style="width:100%;padding:12px 14px;border:1.5px solid #e5e7eb;border-radius:12px;font-size:14px;outline:none;box-sizing:border-box;"/>
+        </div>
+      </div>
+
+      <!-- Email -->
+      <div style="margin-bottom:12px;">
+        <label style="font-size:13px;font-weight:500;color:#374151;display:block;margin-bottom:6px;">Correo electrónico</label>
+        <input [(ngModel)]="email" type="email" placeholder="correo@ejemplo.com"
+               style="width:100%;padding:12px 14px;border:1.5px solid #e5e7eb;border-radius:12px;font-size:14px;outline:none;box-sizing:border-box;"/>
+      </div>
+
+      <!-- Password -->
+      <div style="margin-bottom:20px;">
+        <label style="font-size:13px;font-weight:500;color:#374151;display:block;margin-bottom:6px;">Contraseña</label>
+        <input [(ngModel)]="password" type="password" placeholder="••••••••"
+               style="width:100%;padding:12px 14px;border:1.5px solid #e5e7eb;border-radius:12px;font-size:14px;outline:none;box-sizing:border-box;"/>
+      </div>
+
+      <!-- Error -->
+      <div *ngIf="error" style="background:#fef2f2;border:1px solid #fecaca;border-radius:10px;padding:10px 14px;margin-bottom:16px;">
+        <p style="color:#dc2626;font-size:13px;margin:0;">{{ error }}</p>
+      </div>
+
+      <!-- Botón -->
+      <button (click)="submit()"
+              style="width:100%;padding:14px;background:linear-gradient(135deg,#a855f7,#ec4899);color:white;border:none;border-radius:12px;font-size:16px;font-weight:600;cursor:pointer;">
+        {{ isRegister ? 'Crear cuenta' : 'Ingresar' }}
+      </button>
+
+    </div>
   </div>
-
-  <ion-item><ion-input label="Email" [(ngModel)]="email"></ion-input></ion-item>
-  <ion-item><ion-input label="Password" type="password" [(ngModel)]="password"></ion-input></ion-item>
-
-  <ion-button expand="block" (click)="submit()">
-    {{ isRegister ? 'Crear cuenta' : 'Entrar' }}
-  </ion-button>
-
-  <ion-text color="danger" *ngIf="error">{{ error }}</ion-text>
 </ion-content>
