@@ -22,7 +22,7 @@ export class FeedPage implements OnInit {
 
   posts: any[] = [];
   friends: any[] = [];
-  base = 'http://20.80.73.232/storage/';
+  base = 'http://20.80.73.232/backend/storage/';
 
   selectedPost: any = null;
   newComment = '';
