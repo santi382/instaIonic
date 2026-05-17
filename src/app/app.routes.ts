@@ -26,4 +26,14 @@ export const routes: Routes = [
     path: 'friends',
     loadComponent: () => import('./pages/friends/friends.page').then( m => m.FriendsPage)
   },
+  {
+    path: 'conversations',
+    loadComponent: () => import('./pages/conversations/conversations.page').then( m => m.ConversationsPage)
+  },
+
+  {
+    path: 'chat/:id',
+    loadComponent: () => import('./pages/chat/chat.page').then( m => m.ChatPage)
+  }
+
 ];

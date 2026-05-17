@@ -42,7 +42,7 @@ export class FeedPage implements OnInit {
   storyIndex = 0;
   hideHeader = false;
 
-  likedPosts: Set<number> = new Set();
+  likedPosts: Set<number> = new Set(JSON.parse(localStorage.getItem('likedPosts') || '[]'));
 
   constructor(
     private api: Api,
@@ -63,6 +63,7 @@ export class FeedPage implements OnInit {
   like(p: any) {
     this.api.likePost(p.id).subscribe(() => {
       this.likedPosts.add(p.id);
+      localStorage.setItem('likedPosts', JSON.stringify([...this.likedPosts]));
       this.playLikeSound();
       this.showHeartAnimation(p.id);
       this.load();
@@ -94,12 +95,20 @@ export class FeedPage implements OnInit {
   }
 
   goNewPost() { this.router.navigateByUrl('/new-post'); }
+  goConversations() { this.router.navigateByUrl('/conversations'); }
+  goChat(friend: any) {
+    this.router.navigateByUrl(`/chat/${friend.id}?name=${friend.profile?.username || friend.name}`);
+  }
 
   imgUrl(path: string) { return this.base + path; }
 
   avatarLetter(u: any): string {
     const name = u?.profile?.username || u?.name || '?';
     return name.charAt(0).toUpperCase();
+  }
+
+  isAlreadyFriend(user: any): boolean {
+    return this.friends.some(f => f.id === user.id);
   }
 
   openComments(p: any) {

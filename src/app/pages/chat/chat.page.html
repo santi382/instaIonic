@@ -1,0 +1,64 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/conversations"></ion-back-button>
+    </ion-buttons>
+    <ion-title>{{ userName }}</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <div style="padding:16px;display:flex;flex-direction:column;gap:8px;max-width:600px;margin:0 auto;">
+
+    <div *ngFor="let m of messages"
+         [style.align-items]="isOwn(m) ? 'flex-end' : 'flex-start'"
+         style="display:flex;flex-direction:column;">
+
+      <div [style.background]="isOwn(m) ? 'linear-gradient(135deg,#0d2d5e,#1a4a8a)' : '#f0f0f0'"
+           [style.color]="isOwn(m) ? 'white' : '#111'"
+           style="max-width:75%;padding:10px 14px;border-radius:16px;font-size:14px;">
+
+        <p *ngIf="m.body" style="margin:0;">{{ m.body }}</p>
+
+        <img *ngIf="m.file_type === 'image'"
+             [src]="fileUrl(m.file_path)"
+             style="max-width:200px;border-radius:8px;display:block;" />
+
+        <audio *ngIf="m.file_type === 'audio'" controls style="max-width:200px;">
+          <source [src]="fileUrl(m.file_path)" />
+        </audio>
+
+      </div>
+      <span style="font-size:10px;color:#999;margin-top:2px;">
+        {{ m.sender?.profile?.username || m.sender?.name }}
+      </span>
+    </div>
+
+    <div *ngIf="messages.length === 0" style="text-align:center;color:#999;padding:40px 0;">
+      Empieza la conversación 💬
+    </div>
+
+  </div>
+</ion-content>
+
+<div style="display:flex;align-items:center;padding:8px 12px;background:white;border-top:1px solid #eee;gap:8px;max-width:600px;margin:0 auto;">
+  <button (click)="sendImage()"
+          style="background:none;border:none;font-size:22px;cursor:pointer;padding:4px;">
+    🖼️
+  </button>
+
+  <button (click)="isRecording ? stopRecording() : startRecording()"
+          style="background:none;border:none;font-size:22px;cursor:pointer;padding:4px;">
+    {{ isRecording ? '⏹️' : '🎤' }}
+  </button>
+
+  <input [(ngModel)]="newMessage"
+         placeholder="Escribe un mensaje..."
+         style="flex:1;border:1.5px solid #e5e7eb;border-radius:20px;padding:8px 14px;font-size:14px;outline:none;color:#111;background:white;"
+         (keyup.enter)="send()" />
+
+  <button (click)="send()"
+          style="background:linear-gradient(135deg,#0d2d5e,#1a4a8a);color:white;border:none;width:40px;height:40px;border-radius:50%;cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center;">
+    ➤
+  </button>
+</div>

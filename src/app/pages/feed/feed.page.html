@@ -17,7 +17,7 @@
           {{ pendingRequests.length }}
         </span>
       </ion-button>
-      <ion-button>
+      <ion-button (click)="goConversations()">
         <ion-icon name="chatbubble-outline"></ion-icon>
       </ion-button>
       <ion-button (click)="logout()">
@@ -48,9 +48,10 @@
             <p style="margin:0;font-weight:600;font-size:14px;color:#111;">{{ u.profile?.username || u.name }}</p>
             <p style="margin:0;font-size:12px;color:#888;">{{ u.name }}</p>
           </div>
-          <button (click)="sendRequest(u)" [disabled]="u.requested"
-                  style="background:linear-gradient(135deg,#0d2d5e,#1a4a8a);color:white;border:none;padding:6px 14px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;">
-            {{ u.requested ? 'Enviado' : 'Seguir' }}
+          <button (click)="sendRequest(u)" [disabled]="u.requested || isAlreadyFriend(u)"
+                  [style.background]="isAlreadyFriend(u) ? '#888' : 'linear-gradient(135deg,#0d2d5e,#1a4a8a)'"
+                  style="color:white;border:none;padding:6px 14px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;">
+            {{ isAlreadyFriend(u) ? 'Siguiendo' : (u.requested ? 'Enviado' : 'Seguir') }}
           </button>
         </div>
       </div>
@@ -77,9 +78,9 @@
     <div style="background:white;padding:10px 8px 8px;border-bottom:1px solid #efefef;margin-bottom:4px;">
       <div style="display:flex;gap:14px;overflow-x:auto;padding-bottom:4px;">
         <div *ngFor="let f of friends"
-             (click)="openUserPosts(f)"
-             style="display:flex;flex-direction:column;align-items:center;min-width:64px;cursor:pointer;">
-          <div style="padding:2px;background:linear-gradient(135deg,#0d2d5e,#1a4a8a,#00b4d8);border-radius:50%;">
+             style="display:flex;flex-direction:column;align-items:center;min-width:64px;">
+          <div (click)="openUserPosts(f)"
+               style="padding:2px;background:linear-gradient(135deg,#0d2d5e,#1a4a8a,#00b4d8);border-radius:50%;cursor:pointer;">
             <div style="width:52px;height:52px;border-radius:50%;background:#a855f7;color:white;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:600;border:2px solid white;">
               {{ avatarLetter(f) }}
             </div>
@@ -87,6 +88,10 @@
           <span style="font-size:11px;margin-top:4px;text-align:center;max-width:64px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#111;">
             {{ f?.profile?.username || f?.name }}
           </span>
+          <button (click)="goChat(f)"
+                  style="background:none;border:none;font-size:16px;cursor:pointer;padding:0;margin-top:2px;">
+            💬
+          </button>
         </div>
         <div *ngIf="friends.length === 0"
              style="font-size:13px;color:#999;padding:8px;">
@@ -96,7 +101,7 @@
     </div>
 
     <!-- Posts -->
-    <div *ngFor="let p of posts" style="background:white;margin-bottom:8px;border-bottom:1px solid #efefef;">
+    <div *ngFor="let p of posts" style="background:white;margin-bottom:8px;border-radius:12px;box-shadow:0 1px 3px rgba(0,0,0,0.08);">
       <div style="display:flex;align-items:center;padding:10px 12px;gap:10px;">
         <div style="width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,#0d2d5e,#1a4a8a);color:white;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:600;flex-shrink:0;">
           {{ avatarLetter(p.user) }}
@@ -135,7 +140,7 @@
       <button (click)="closeComments()"
               style="background:none;border:none;font-size:20px;cursor:pointer;color:#888;">✕</button>
     </div>
-    <div style="flex:1;overflow-y:auto;padding:12px 16px;">
+    <div style="flex:1;overflow-y:auto;padding:12px 16px;background:#f9f9f9;">
       <div *ngFor="let c of comments" style="padding:10px 0;border-bottom:1px solid #f5f5f5;display:flex;gap:10px;">
         <div style="width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#0d2d5e,#1a4a8a);color:white;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;flex-shrink:0;">
           {{ avatarLetter(c.user) }}
