@@ -7,7 +7,7 @@ import { HttpClient } from '@angular/common/http';
 export class Auth {
 
   private tokenKey = 'token';
-  private apiUrl = 'http://20.80.73.232/backend/api/';
+  private apiUrl = 'http://20.80.73.232:8080/api/';
 
   constructor(private http: HttpClient) {}
 
