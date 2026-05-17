@@ -42,6 +42,8 @@ export class FeedPage implements OnInit {
   storyIndex = 0;
   hideHeader = false;
 
+  likedPosts: Set<number> = new Set();
+
   constructor(
     private api: Api,
     private router: Router,
@@ -59,7 +61,36 @@ export class FeedPage implements OnInit {
   }
 
   like(p: any) {
-    this.api.likePost(p.id).subscribe(() => this.load());
+    this.api.likePost(p.id).subscribe(() => {
+      this.likedPosts.add(p.id);
+      this.playLikeSound();
+      this.showHeartAnimation(p.id);
+      this.load();
+    });
+  }
+
+  playLikeSound() {
+    const ctx = new AudioContext();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.frequency.setValueAtTime(880, ctx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(440, ctx.currentTime + 0.1);
+    gain.gain.setValueAtTime(0.3, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.3);
+    osc.start(ctx.currentTime);
+    osc.stop(ctx.currentTime + 0.3);
+  }
+
+  showHeartAnimation(postId: number) {
+    const el = document.getElementById('heart-' + postId);
+    if (el) {
+      el.classList.remove('heart-animate');
+      void el.offsetWidth;
+      el.classList.add('heart-animate');
+      setTimeout(() => el.classList.remove('heart-animate'), 800);
+    }
   }
 
   goNewPost() { this.router.navigateByUrl('/new-post'); }
@@ -82,7 +113,22 @@ export class FeedPage implements OnInit {
     this.api.commentPost(this.selectedPost.id, this.newComment).subscribe(res => {
       this.comments.unshift(res);
       this.newComment = '';
+      this.playCommentSound();
     });
+  }
+
+  playCommentSound() {
+    const ctx = new AudioContext();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.frequency.setValueAtTime(440, ctx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime + 0.15);
+    gain.gain.setValueAtTime(0.2, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.2);
+    osc.start(ctx.currentTime);
+    osc.stop(ctx.currentTime + 0.2);
   }
 
   closeComments() {

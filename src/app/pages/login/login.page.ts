@@ -21,29 +21,50 @@ import { Router } from '@angular/router';
 })
 export class LoginPage implements OnInit {
 
-    email = ''; password = ''; name = ''; username = ''; isRegister = false; error = '';
+  email = ''; password = ''; name = ''; username = ''; isRegister = false; error = '';
 
-    constructor(private auth: Auth, private router: Router) {}
+  constructor(private auth: Auth, private router: Router) {}
 
-    ngOnInit(): void {}
+  ngOnInit(): void {}
 
-    submit() {
-      if (this.isRegister) {
-        this.auth.register({
-          name: this.name,
-          email: this.email,
-          password: this.password,
-          username: this.username
-        }).subscribe({
-          next: res => { this.auth.setToken(res.token); this.router.navigateByUrl('/feed'); },
-          error: _ => this.error = 'No se pudo registrar'
-        });
-      } else {
-        this.auth.login(this.email, this.password).subscribe({
-          next: res => { this.auth.setToken(res.token); this.router.navigateByUrl('/feed'); },
-          error: _ => this.error = 'Credenciales inválidas'
-        });
-      }
+  submit() {
+    if (this.isRegister) {
+      this.auth.register({
+        name: this.name,
+        email: this.email,
+        password: this.password,
+        username: this.username
+      }).subscribe({
+        next: res => {
+          console.log('REGISTER OK', res);
+          if (res && res.token) {
+            this.auth.setToken(res.token);
+            this.router.navigateByUrl('/feed');
+          } else {
+            this.error = 'Token no recibido: ' + JSON.stringify(res);
+          }
+        },
+        error: err => {
+          console.log('REGISTER ERROR', err);
+          this.error = 'No se pudo registrar: ' + err.status;
+        }
+      });
+    } else {
+      this.auth.login(this.email, this.password).subscribe({
+        next: res => {
+          console.log('LOGIN OK', res);
+          if (res && res.token) {
+            this.auth.setToken(res.token);
+            this.router.navigateByUrl('/feed');
+          } else {
+            this.error = 'Token no recibido: ' + JSON.stringify(res);
+          }
+        },
+        error: err => {
+          console.log('LOGIN ERROR', err);
+          this.error = 'Error: ' + err.status;
+        }
+      });
     }
-
+  }
 }

@@ -1,5 +1,5 @@
 ion-content {
-  --background: #fafafa;
+  --background: #efefef;
 }
 
 ion-toolbar {
@@ -10,9 +10,21 @@ ion-toolbar {
 ion-title {
   color: white;
   font-weight: 700;
-  font-size: 18px;
 }
 
 ion-button {
   --color: white;
+}
+
+.heart-animate {
+  animation: heartBeat 0.8s ease;
+}
+
+@keyframes heartBeat {
+  0%   { transform: scale(1); }
+  20%  { transform: scale(1.6); filter: drop-shadow(0 0 8px red); }
+  40%  { transform: scale(1.2); }
+  60%  { transform: scale(1.5); filter: drop-shadow(0 0 12px red); }
+  80%  { transform: scale(1.1); }
+  100% { transform: scale(1); }
 }

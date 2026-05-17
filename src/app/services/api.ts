@@ -2,7 +2,6 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Auth } from './auth';
 
-
 @Injectable({
   providedIn: 'root',
 })
@@ -67,6 +66,27 @@ export class Api {
 
   searchUsers(q: string) {
     return this.http.get<any[]>(this.apiUrl + `users/search?q=${q}`, this.authHeaders());
-}
+  }
 
+  getMe() {
+    return this.http.get<any>(this.apiUrl + 'me', this.authHeaders());
+  }
+
+  getConversations() {
+    return this.http.get<any[]>(this.apiUrl + 'conversations', this.authHeaders());
+  }
+
+  getMessages(userId: number) {
+    return this.http.get<any[]>(this.apiUrl + `messages/${userId}`, this.authHeaders());
+  }
+
+  sendMessage(userId: number, body: string) {
+    return this.http.post(this.apiUrl + `messages/${userId}`, { body }, this.authHeaders());
+  }
+
+  sendMessageFile(userId: number, file: File) {
+    const fd = new FormData();
+    fd.append('file', file);
+    return this.http.post(this.apiUrl + `messages/${userId}`, fd, this.authHeaders());
+  }
 }
