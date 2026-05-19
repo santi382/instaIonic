@@ -2,9 +2,9 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { IonHeader, IonToolbar, IonTitle, IonContent,
-  IonList, IonItem, IonAvatar, IonLabel, IonButton, IonButtons, IonInput, IonIcon } from '@ionic/angular/standalone';
+  IonList, IonItem, IonAvatar, IonLabel, IonButton, IonButtons, IonInput, IonIcon, IonMenu, IonMenuButton } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
-import { cameraOutline, exitOutline, personAdd, chatbubbleOutline, searchOutline, checkmarkOutline } from 'ionicons/icons';
+import { cameraOutline, exitOutline, personAdd, chatbubbleOutline, searchOutline, checkmarkOutline, personOutline } from 'ionicons/icons';
 import { Router } from '@angular/router';
 import { Api } from '../../services/api';
 import { Auth } from '../../services/auth';
@@ -16,7 +16,7 @@ import { Auth } from '../../services/auth';
   standalone: true,
   imports: [IonInput, IonHeader, IonToolbar, IonTitle, IonContent,
     IonList, IonItem, IonAvatar, IonLabel, IonButton, IonButtons,
-    FormsModule, CommonModule, IonIcon]
+    FormsModule, CommonModule, IonIcon, IonMenu, IonMenuButton]
 })
 export class FeedPage implements OnInit {
 
@@ -49,7 +49,7 @@ export class FeedPage implements OnInit {
     private router: Router,
     private auth: Auth,
   ) {
-    addIcons({ cameraOutline, personAdd, exitOutline, chatbubbleOutline, searchOutline, checkmarkOutline });
+    addIcons({ cameraOutline, personAdd, exitOutline, chatbubbleOutline, searchOutline, checkmarkOutline, personOutline });
   }
 
   ngOnInit() { this.load(); }
@@ -96,8 +96,14 @@ export class FeedPage implements OnInit {
 
   goNewPost() { this.router.navigateByUrl('/new-post'); }
   goConversations() { this.router.navigateByUrl('/conversations'); }
+  goProfile() { this.router.navigateByUrl('/profile'); }
   goChat(friend: any) {
     this.router.navigateByUrl(`/chat/${friend.id}?name=${friend.profile?.username || friend.name}`);
+  }
+
+  async closeMenu() {
+    const menu = document.querySelector('ion-menu') as any;
+    if (menu) await menu.close();
   }
 
   imgUrl(path: string) { return this.base + path; }

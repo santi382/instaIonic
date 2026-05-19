@@ -1,0 +1,163 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/feed"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Mi Perfil</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="editMode = !editMode">
+        {{ editMode ? 'Cancelar' : 'Editar' }}
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <div style="max-width:600px;margin:0 auto;">
+
+    <!-- Banner clickeable -->
+    <div (click)="selectBanner()"
+         style="width:100%;height:120px;position:relative;cursor:pointer;overflow:hidden;">
+      <img *ngIf="bannerPreview" [src]="bannerPreview"
+           style="width:100%;height:100%;object-fit:cover;" />
+      <div *ngIf="!bannerPreview"
+           style="width:100%;height:100%;background:linear-gradient(135deg,#0a1628,#0d2d5e,#1a4a8a);display:flex;align-items:center;justify-content:center;">
+        <span style="color:rgba(255,255,255,0.5);font-size:13px;">📷 Cambiar banner</span>
+      </div>
+    </div>
+
+    <!-- Avatar sobre el banner -->
+    <div style="display:flex;justify-content:space-between;align-items:flex-end;padding:0 16px;margin-top:-40px;margin-bottom:12px;">
+      <div (click)="showAvatarOptions = !showAvatarOptions"
+           style="width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,#0d2d5e,#1a4a8a);color:white;display:flex;align-items:center;justify-content:center;font-size:32px;font-weight:600;border:3px solid white;cursor:pointer;position:relative;overflow:hidden;">
+        <img *ngIf="avatarPreview" [src]="avatarPreview" style="width:100%;height:100%;object-fit:cover;" />
+        <span *ngIf="!avatarPreview">{{ avatarLetter() }}</span>
+        <div style="position:absolute;bottom:0;right:0;background:#0d2d5e;border-radius:50%;width:24px;height:24px;display:flex;align-items:center;justify-content:center;border:2px solid white;">
+          <span style="font-size:12px;">📷</span>
+        </div>
+      </div>
+      <button *ngIf="!editMode" (click)="editMode = true"
+              style="background:white;color:#0d2d5e;border:1.5px solid #0d2d5e;padding:6px 16px;border-radius:20px;font-size:13px;font-weight:600;cursor:pointer;">
+        Editar perfil
+      </button>
+    </div>
+
+    <!-- Opciones avatar -->
+    <div *ngIf="showAvatarOptions"
+         style="margin:0 16px 12px;background:white;border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,0.15);overflow:hidden;">
+      <div style="padding:14px 16px;border-bottom:1px solid #efefef;font-weight:600;font-size:14px;color:#111;">
+        Foto de perfil
+      </div>
+      <div (click)="takeAvatarPhoto()"
+           style="padding:14px 16px;cursor:pointer;color:#0d2d5e;font-size:14px;border-bottom:1px solid #efefef;">
+        📷 Tomar foto
+      </div>
+      <div (click)="selectAvatarFromGallery()"
+           style="padding:14px 16px;cursor:pointer;color:#0d2d5e;font-size:14px;border-bottom:1px solid #efefef;">
+        🖼️ Elegir de galería
+      </div>
+      <div (click)="showAvatarOptions=false"
+           style="padding:14px 16px;cursor:pointer;color:#dc2626;font-size:14px;">
+        ✕ Cancelar
+      </div>
+    </div>
+
+    <!-- Info del perfil -->
+    <div style="padding:0 16px 16px;">
+      <h2 style="margin:0 0 2px;font-size:18px;font-weight:700;color:#111;">{{ name }}</h2>
+      <p style="margin:0 0 4px;font-size:14px;color:#888;">@{{ username }}</p>
+      <p *ngIf="pronouns" style="margin:0 0 4px;font-size:13px;color:#666;">{{ pronouns }}</p>
+      <p *ngIf="bio" style="margin:0 0 4px;font-size:14px;color:#555;">{{ bio }}</p>
+      <p *ngIf="website" style="margin:0 0 4px;font-size:13px;color:#0d2d5e;">🔗 {{ website }}</p>
+      <p *ngIf="gender" style="margin:0;font-size:13px;color:#666;">{{ gender }}</p>
+    </div>
+
+    <!-- Stats -->
+    <div style="display:flex;justify-content:center;gap:32px;margin:0 16px 16px;background:white;padding:16px;border-radius:12px;box-shadow:0 1px 3px rgba(0,0,0,0.08);">
+      <div style="text-align:center;">
+        <p style="margin:0;font-size:22px;font-weight:700;color:#111;">{{ posts.length }}</p>
+        <p style="margin:0;font-size:12px;color:#888;">Publicaciones</p>
+      </div>
+    </div>
+
+    <!-- Editar perfil -->
+    <div *ngIf="editMode" style="background:white;padding:16px;border-radius:12px;box-shadow:0 1px 3px rgba(0,0,0,0.08);margin:0 16px 16px;">
+      <p style="margin:0 0 16px;font-weight:600;font-size:15px;color:#111;">Editar información</p>
+
+      <div style="margin-bottom:12px;">
+        <label style="font-size:13px;font-weight:500;color:#374151;display:block;margin-bottom:6px;">Nombre completo</label>
+        <input [(ngModel)]="name" type="text"
+               style="width:100%;padding:10px 14px;border:1.5px solid #e5e7eb;border-radius:10px;font-size:14px;outline:none;box-sizing:border-box;color:#111;background:white;"/>
+      </div>
+
+      <div style="margin-bottom:12px;">
+        <label style="font-size:13px;font-weight:500;color:#374151;display:block;margin-bottom:6px;">Usuario</label>
+        <input [(ngModel)]="username" type="text"
+               style="width:100%;padding:10px 14px;border:1.5px solid #e5e7eb;border-radius:10px;font-size:14px;outline:none;box-sizing:border-box;color:#111;background:white;"/>
+      </div>
+
+      <div style="margin-bottom:12px;">
+        <label style="font-size:13px;font-weight:500;color:#374151;display:block;margin-bottom:6px;">Presentación / Bio</label>
+        <textarea [(ngModel)]="bio" rows="3"
+                  style="width:100%;padding:10px 14px;border:1.5px solid #e5e7eb;border-radius:10px;font-size:14px;outline:none;box-sizing:border-box;resize:none;color:#111;background:white;font-family:inherit;">
+        </textarea>
+      </div>
+
+      <div style="margin-bottom:12px;">
+        <label style="font-size:13px;font-weight:500;color:#374151;display:block;margin-bottom:6px;">Pronombres</label>
+        <input [(ngModel)]="pronouns" type="text" placeholder="él/ella/elle..."
+               style="width:100%;padding:10px 14px;border:1.5px solid #e5e7eb;border-radius:10px;font-size:14px;outline:none;box-sizing:border-box;color:#111;background:white;"/>
+      </div>
+
+      <div style="margin-bottom:12px;">
+        <label style="font-size:13px;font-weight:500;color:#374151;display:block;margin-bottom:6px;">Género</label>
+        <select [(ngModel)]="gender"
+                style="width:100%;padding:10px 14px;border:1.5px solid #e5e7eb;border-radius:10px;font-size:14px;outline:none;box-sizing:border-box;color:#111;background:white;">
+          <option value="">Prefiero no decirlo</option>
+          <option value="Hombre">Hombre</option>
+          <option value="Mujer">Mujer</option>
+          <option value="No binario">No binario</option>
+          <option value="Otro">Otro</option>
+        </select>
+      </div>
+
+      <div style="margin-bottom:16px;">
+        <label style="font-size:13px;font-weight:500;color:#374151;display:block;margin-bottom:6px;">Enlace / Website</label>
+        <input [(ngModel)]="website" type="text" placeholder="https://..."
+               style="width:100%;padding:10px 14px;border:1.5px solid #e5e7eb;border-radius:10px;font-size:14px;outline:none;box-sizing:border-box;color:#111;background:white;"/>
+      </div>
+
+      <div *ngIf="successMsg" style="background:#dcfce7;border:1px solid #86efac;border-radius:8px;padding:10px;margin-bottom:12px;">
+        <p style="color:#15803d;margin:0;font-size:13px;">{{ successMsg }}</p>
+      </div>
+
+      <button (click)="saveProfile()"
+              style="width:100%;padding:12px;background:linear-gradient(135deg,#0a1628,#0d2d5e);color:white;border:none;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;">
+        Guardar cambios
+      </button>
+    </div>
+
+    <!-- Mis posts -->
+    <div style="padding:0 16px;margin-bottom:16px;">
+      <p style="font-weight:600;font-size:15px;color:#111;margin:0 0 12px;">Mis publicaciones</p>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:4px;">
+        <div *ngFor="let p of posts">
+          <img [src]="imgUrl(p.image)"
+               style="width:100%;aspect-ratio:1;object-fit:cover;border-radius:4px;" />
+        </div>
+      </div>
+      <div *ngIf="posts.length === 0" style="text-align:center;color:#999;padding:20px;">
+        No tienes publicaciones aún
+      </div>
+    </div>
+
+    <!-- Cerrar sesión -->
+    <div style="padding:0 16px 32px;">
+      <button (click)="logout()"
+              style="width:100%;padding:12px;background:#fee2e2;color:#dc2626;border:none;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;">
+        Cerrar sesión
+      </button>
+    </div>
+
+  </div>
+</ion-content>

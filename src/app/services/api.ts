@@ -89,4 +89,22 @@ export class Api {
     fd.append('file', file);
     return this.http.post(this.apiUrl + `messages/${userId}`, fd, this.authHeaders());
   }
+
+  updateProfile(data: {name: string, username: string, bio: string, pronouns: string, gender: string, website: string}) {
+    return this.http.put<any>(this.apiUrl + 'profile', data, this.authHeaders());
+}
+
+
+updateAvatar(file: File) {
+    const fd = new FormData();
+    fd.append('avatar', file);
+    return this.http.post<any>(this.apiUrl + 'profile/avatar', fd, this.authHeaders());
+}
+
+updateBanner(file: File) {
+    const fd = new FormData();
+    fd.append('banner', file);
+    return this.http.post<any>(this.apiUrl + 'profile/banner', fd, this.authHeaders());
+}
+
 }
